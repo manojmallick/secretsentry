@@ -1,0 +1,25 @@
+name: deploy-vsce-publish
+
+on:
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - uses: pnpm/action-setup@v4
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm compile
+      - run: npx vsce publish
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+      # Same built artifact, published to the open-source registry used by VSCodium,
+      # Eclipse Theia, Gitpod, and non-Microsoft VS Code-compatible editors.
+      - run: npx ovsx publish
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
